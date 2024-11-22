@@ -1,4 +1,4 @@
-package cs112.ud2;
+package poker;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -7,12 +7,12 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class HelloApplication extends Application {
+public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/poker/main-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600); // Adjust dimensions as needed
+        stage.setTitle("Poker AI Simulation");
         stage.setScene(scene);
         stage.show();
     }

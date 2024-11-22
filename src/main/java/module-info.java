@@ -1,8 +1,8 @@
-module cs112.ud2 {
+module poker {
     requires javafx.controls;
     requires javafx.fxml;
 
-
-    opens cs112.ud2 to javafx.fxml;
-    exports cs112.ud2;
+    
+    exports poker;
+    opens poker to javafx.fxml;
 }
