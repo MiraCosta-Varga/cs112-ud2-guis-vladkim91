@@ -1,8 +1,10 @@
 module poker {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.json; // Add this line to require the JSON API module
 
-    
     exports poker;
-    opens poker to javafx.fxml;
+    exports poker.api;
+    exports poker.models;
+    opens poker.controllers to javafx.fxml;
 }
