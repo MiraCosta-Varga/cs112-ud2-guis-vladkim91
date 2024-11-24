@@ -2,110 +2,147 @@ package poker.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import poker.models.PokerGame;
-import poker.models.PokerAI;
-import poker.models.Player;
+import poker.models.*;
 
 import java.util.List;
 
 public class PokerController {
 
     @FXML
-    private Label potLabel, dealerLabel, roundLabel;
-    @FXML
-    private HBox communityCards; // Dynamic card display
-    @FXML
-    private VBox playerDetails;  // Player info
-    @FXML
-    private Slider aggressionSlider, tightnessSlider, bluffSlider;
-    @FXML
-    private Button foldButton, callButton, raiseButton;
-    @FXML
-    private TextField raiseAmountField; // For player raise amount
+    private ImageView pokerTableImage;
 
-    private PokerGame pokerGame; // Backend game logic
-    private Player humanPlayer;  // Reference to the human player
+    @FXML
+    private HBox communityCards, aiPlayer1Cards, aiPlayer2Cards, playerCardsBox;
+
+    @FXML
+    private HBox aiPlayersBox;
+
+    @FXML
+    private Label potLabel;
+
+    @FXML
+    private Button startButton, foldButton, callButton, raiseButton;
+
+    @FXML
+    private TextField raiseAmountField;
+
+    private PokerGame pokerGame;
+    private Player humanPlayer;
 
     @FXML
     public void initialize() {
-        // Initialize the human player and AI players
+        pokerTableImage.setImage(new Image(getClass().getResource("/images/poker-table.png").toString()));// Set poker table background
+
+        // Initialize players
         humanPlayer = new Player("Human", 1000);
-        PokerAI mainAI = new PokerAI("AI_Main", 1000, 50, 50, 50, 50) {
-            @Override
-            public String makeDecision(double handStrength, double potOdds) {
-                if (handStrength > 0.8) return "Raise";
-                else if (handStrength > 0.5) return "Call";
-                return "Fold";
-            }
-        };
-        PokerAI opponent1 = new PokerAI("AI_1", 1000, 60, 40, 30, 70) {
-            @Override
-            public String makeDecision(double handStrength, double potOdds) {
-                if (handStrength > 0.7) return "Raise";
-                else if (handStrength > 0.4) return "Call";
-                return "Fold";
-            }
-        };
 
-        // Initialize the game with players and blinds
-        pokerGame = new PokerGame(humanPlayer, List.of(opponent1, mainAI), 10, 20);
+// Use BasicPokerAI to create AI players
+        PokerAI aiPlayer1 = new BasicPokerAI("AI_1", 1000, 50, 50, 50, 50);
+        PokerAI aiPlayer2 = new BasicPokerAI("AI_2", 1000, 60, 40, 30, 70);
 
-        // Set up button actions
-        foldButton.setOnAction(e -> handlePlayerAction("Fold"));
-        callButton.setOnAction(e -> handlePlayerAction("Call"));
-        raiseButton.setOnAction(e -> handlePlayerAction("Raise"));
+// Initialize the poker game
+        pokerGame = new PokerGame(humanPlayer, List.of(aiPlayer1, aiPlayer2), 10, 20);
 
+// Disable controls initially
+        togglePlayerControls(false);
+
+    }
+
+    @FXML
+    private void startGame() {
+        pokerGame.playHand();
+        updateUI();
+        togglePlayerControls(true); // Enable controls after dealing
+    }
+
+    @FXML
+    private void playerFold() {
+        pokerGame.getHumanPlayer().fold();
         updateUI();
     }
 
     @FXML
-    private void handlePlayerAction(String action) {
-        switch (action) {
-            case "Fold" -> {
-                humanPlayer.fold();
-                System.out.println("Human folds.");
-            }
-            case "Call" -> {
-                int amountToCall = pokerGame.getSmallBlind();
-                humanPlayer.call(amountToCall);
-                pokerGame.addToPot(amountToCall);
-                System.out.println("Human calls $" + amountToCall);
-            }
-            case "Raise" -> {
-                try {
-                    int raiseAmount = Integer.parseInt(raiseAmountField.getText());
-                    humanPlayer.raise(raiseAmount);
-                    pokerGame.addToPot(raiseAmount);
-                    System.out.println("Human raises $" + raiseAmount);
-                } catch (NumberFormatException e) {
-                    System.err.println("Invalid raise amount. Please enter a number.");
-                }
-            }
-        }
-        updateUI();
-        pokerGame.playBettingRound();
+    private void playerCall() {
+        pokerGame.getHumanPlayer().call(pokerGame.getCurrentBet());
         updateUI();
     }
 
+    @FXML
+    private void playerRaise() {
+        try {
+            int raiseAmount = Integer.parseInt(raiseAmountField.getText());
+            pokerGame.getHumanPlayer().raise(raiseAmount);
+            pokerGame.addToPot(raiseAmount);
+            updateUI();
+        } catch (NumberFormatException e) {
+            showError("Invalid raise amount. Please enter a valid number.");
+        }
+    }
+
+
+
+    private void togglePlayerControls(boolean enable) {
+        foldButton.setDisable(!enable);
+        callButton.setDisable(!enable);
+        raiseButton.setDisable(!enable);
+    }
+
     private void updateUI() {
+        // Update pot
         potLabel.setText("Pot: $" + pokerGame.getPot());
-        dealerLabel.setText("Dealer: Player " + pokerGame.getDealerPosition());
-        roundLabel.setText("Round: " + pokerGame.getCurrentRound());
 
+        // Update community cards
         communityCards.getChildren().clear();
-        pokerGame.getCommunityCards().forEach(card -> {
-            Label cardLabel = new Label(card.toString());
-            cardLabel.setStyle("-fx-border-color: black; -fx-padding: 5;");
-            communityCards.getChildren().add(cardLabel);
-        });
+        for (Card card : pokerGame.getCommunityCards()) {
+            communityCards.getChildren().add(createCardImage(card));
+        }
 
-        playerDetails.getChildren().clear();
-        pokerGame.getPlayers().forEach(player -> {
-            Label playerLabel = new Label(player.getId() + ": $" + player.getChips());
-            if (player instanceof PokerAI) playerLabel.setText(playerLabel.getText() + " (AI)");
-            playerDetails.getChildren().add(playerLabel);
-        });
+        // Update AI players
+        aiPlayer1Cards.getChildren().clear();
+        for (Card card : pokerGame.getAiPlayers().get(0).getHoleCards()) {
+            aiPlayer1Cards.getChildren().add(createCardBack());
+        }
+
+        aiPlayer2Cards.getChildren().clear();
+        for (Card card : pokerGame.getAiPlayers().get(1).getHoleCards()) {
+            aiPlayer2Cards.getChildren().add(createCardBack());
+        }
+
+        // Update human player cards
+        playerCardsBox.getChildren().clear();
+        for (Card card : pokerGame.getHumanPlayer().getHoleCards()) {
+            playerCardsBox.getChildren().add(createCardImage(card));
+        }
+    }
+
+    private StackPane createCardImage(Card card) {
+        StackPane cardPane = new StackPane();
+        ImageView cardImage = new ImageView(new Image("/images/cards/" + card.toString() + ".png"));
+        cardImage.setFitWidth(80);
+        cardImage.setFitHeight(120);
+        cardPane.getChildren().add(cardImage);
+        return cardPane;
+    }
+
+    private StackPane createCardBack() {
+        StackPane cardPane = new StackPane();
+        ImageView cardImage = new ImageView(new Image("/images/cards/card-back.png"));
+        cardImage.setFitWidth(80);
+        cardImage.setFitHeight(120);
+        cardPane.getChildren().add(cardImage);
+        return cardPane;
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

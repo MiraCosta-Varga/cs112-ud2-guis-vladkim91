@@ -3,75 +3,41 @@ package poker.models;
 public class Player {
 
     private String id;
-    private int chips;
-    private boolean active;
-    private int currentBet;
+    private double chips;
+    private Card[] holeCards;
 
-    // Constructor
-    public Player(String id, int initialChips) {
+    public Player(String id, double chips) {
         this.id = id;
-        this.chips = initialChips;
-        this.active = true;
-        this.currentBet = 0;
+        this.chips = chips;
+        this.holeCards = new Card[2]; // Two hole cards
     }
 
-    // Player actions
-    public void fold() {
-        active = false;
-        System.out.println(id + " folds.");
+    public void setHoleCards(Card card1, Card card2) {
+        this.holeCards[0] = card1;
+        this.holeCards[1] = card2;
     }
 
-    public void call(int amountToCall) {
-        if (amountToCall > chips) {
-            amountToCall = chips; // Go all-in if the call amount exceeds available chips
-        }
-        chips -= amountToCall;
-        currentBet += amountToCall;
-        System.out.println(id + " calls $" + amountToCall);
+    public Card[] getHoleCards() {
+        return holeCards;
     }
 
-    public void raise(int raiseAmount) {
-        if (raiseAmount > chips) {
-            throw new IllegalArgumentException("Not enough chips to raise.");
-        }
-        chips -= raiseAmount;
-        currentBet += raiseAmount;
-        System.out.println(id + " raises $" + raiseAmount);
-    }
-
-    // Reset player status for a new hand
-    public void resetForNewHand() {
-        currentBet = 0;
-        active = true;
-    }
-
-    // Getters
     public String getId() {
         return id;
     }
 
-    public int getChips() {
+    public double getChips() {
         return chips;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public int getCurrentBet() {
-        return currentBet;
-    }
-
-    public void bet(int amount) {
-        if (amount > chips) {
-            throw new IllegalArgumentException("Not enough chips to bet.");
-        }
+    public void call(double amount) {
         chips -= amount;
-        currentBet += amount; // Optionally track the current bet
-    }
-    public void adjustBalance(double amount) {
-        chips += amount;
     }
 
+    public void raise(double amount) {
+        chips -= amount;
+    }
 
+    public void fold() {
+        System.out.println(id + " folds.");
+    }
 }
