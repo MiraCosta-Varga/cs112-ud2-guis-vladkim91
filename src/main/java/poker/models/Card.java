@@ -23,7 +23,7 @@ public class Card {
     // ToString for human-readable representation
     @Override
     public String toString() {
-        return rank + " of " + suit;
+        return rank + suit;
     }
 
     // Equals and HashCode (optional, in case you need comparisons)

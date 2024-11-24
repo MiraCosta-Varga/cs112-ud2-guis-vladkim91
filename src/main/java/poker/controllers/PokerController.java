@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import poker.models.*;
 
+import java.net.URL;
 import java.util.List;
 
 public class PokerController {
@@ -122,21 +123,29 @@ public class PokerController {
 
     private StackPane createCardImage(Card card) {
         StackPane cardPane = new StackPane();
-        ImageView cardImage = new ImageView(new Image("/images/cards/" + card.toString() + ".png"));
+        String imagePath = "/images/cards/" + card.toString() + ".png";
+        URL resource = getClass().getResource(imagePath);
+        if (resource == null) {
+            throw new IllegalArgumentException("Resource not found: " + imagePath);
+        }
+        ImageView cardImage = new ImageView(new Image(resource.toString()));
         cardImage.setFitWidth(80);
         cardImage.setFitHeight(120);
         cardPane.getChildren().add(cardImage);
         return cardPane;
     }
 
+
     private StackPane createCardBack() {
         StackPane cardPane = new StackPane();
-        ImageView cardImage = new ImageView(new Image("/images/cards/card-back.png"));
+        ImageView cardImage = new ImageView(new Image(
+                getClass().getResource("/images/cards/card-back.png").toString()));
         cardImage.setFitWidth(80);
         cardImage.setFitHeight(120);
         cardPane.getChildren().add(cardImage);
         return cardPane;
     }
+
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

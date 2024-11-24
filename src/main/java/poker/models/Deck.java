@@ -53,7 +53,7 @@ public class Deck {
     // Reset the deck to its full state (52 cards)
     public void reset() {
         cards.clear();
-        String[] suits = {"HEARTS", "DIAMONDS", "CLUBS", "SPADES"};
+        String[] suits = {"H", "D", "C", "S"};
         String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"};
 
         for (String suit : suits) {
