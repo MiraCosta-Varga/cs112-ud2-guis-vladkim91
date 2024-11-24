@@ -7,25 +7,26 @@ import java.util.*;
 public class PokerGame {
 
     private Deck deck;
-    private List<PokerAI> players;
-    private PokerAI mainAI;
+    private List<Player> players;
+    private Player humanPlayer;
     private List<Card> communityCards;
     private double pot;
     private int dealerPosition;
-    private double smallBlind;
-    private double bigBlind;
+    private int smallBlind;
+    private int bigBlind;
     private String currentRound;
 
-    public PokerGame(List<PokerAI> players, PokerAI mainAI, double smallBlind, double bigBlind) {
+    public PokerGame(Player humanPlayer, List<Player> otherPlayers, int smallBlind, double bigBlind) {
         this.deck = new Deck();
-        this.players = new ArrayList<>(players);
-        this.mainAI = mainAI;
-        this.players.add(mainAI); // Add main AI to the game
+        this.players = new ArrayList<>();
+        this.players.add(humanPlayer);
+        this.players.addAll(otherPlayers);
+        this.humanPlayer = humanPlayer;
         this.communityCards = new ArrayList<>();
         this.pot = 0;
         this.dealerPosition = 0; // Start with the first player as dealer
         this.smallBlind = smallBlind;
-        this.bigBlind = bigBlind;
+        this.bigBlind = (int) bigBlind;
         this.currentRound = "Pre-Flop"; // Initialize to the first betting round
     }
 
@@ -46,15 +47,19 @@ public class PokerGame {
         pot = 0;
         dealerPosition = (dealerPosition + 1) % players.size();
         currentRound = "Pre-Flop";
-        for (PokerAI player : players) {
-            player.resetHoleCards();
+        for (Player player : players) {
+            if (player instanceof PokerAI ai) {
+                ai.resetHoleCards();
+            }
         }
     }
 
     private void assignPositions() {
         for (int i = 0; i < players.size(); i++) {
             int relativePosition = (i - dealerPosition + players.size()) % players.size();
-            players.get(i).updatePosition(relativePosition, dealerPosition, players.size());
+            if (players.get(i) instanceof PokerAI ai) {
+                ai.updatePosition(relativePosition, dealerPosition, players.size());
+            }
         }
     }
 
@@ -64,7 +69,10 @@ public class PokerGame {
         for (int i = 0; i < 2; i++) { // Deal two rounds of cards
             for (int j = 0; j < players.size(); j++) {
                 int position = (startPosition + j) % players.size();
-                players.get(position).addHoleCard(deck.dealCard());
+                Card dealtCard = deck.dealCard();
+                if (players.get(position) instanceof PokerAI ai) {
+                    ai.addHoleCard(dealtCard);
+                }
             }
         }
     }
@@ -124,7 +132,6 @@ public class PokerGame {
         }
     }
 
-
     private void dealCommunityCards(int numCards) {
         for (int i = 0; i < numCards; i++) {
             communityCards.add(deck.dealCard());
@@ -136,8 +143,8 @@ public class PokerGame {
         int smallBlindPlayer = (dealerPosition + 1) % players.size();
         int bigBlindPlayer = (dealerPosition + 2) % players.size();
 
-        players.get(smallBlindPlayer).adjustBalance(-smallBlind);
-        players.get(bigBlindPlayer).adjustBalance(-bigBlind);
+        players.get(smallBlindPlayer).bet((int) smallBlind);
+        players.get(bigBlindPlayer).bet((int) bigBlind);
 
         pot += smallBlind + bigBlind;
 
@@ -145,57 +152,22 @@ public class PokerGame {
         System.out.println("Big Blind: Player " + players.get(bigBlindPlayer).getId());
     }
 
-    private void playBettingRound() {
-        List<PokerAI> activePlayers = new ArrayList<>(players);
 
-        while (true) {
-            boolean betsAdjusted = false;
-            for (PokerAI player : activePlayers) {
-                if (player.getBalance() > 0) {
-                    double handStrength = estimateHandStrength(player);
-                    double potOdds = potOdds(player);
-                    String action = player.makeDecision(handStrength, potOdds);
-                    System.out.println(player.getId() + " Action: " + action);
-                    betsAdjusted |= handleAction(player, action, activePlayers);
-                }
+    public void playBettingRound() {
+        for (Player player : players) {
+            if (player instanceof PokerAI ai) {
+                double handStrength = estimateHandStrength(ai);
+                double potOdds = pot / (pot + ai.getChips());
+                String action = ai.makeDecision(handStrength, potOdds);
+                handleAIAction(ai, action);
             }
-
-            // Break when no more bets are adjusted
-            if (!betsAdjusted) break;
         }
     }
-
-    private double potOdds(PokerAI player) {
-        return pot / (pot + player.getBalance());
+    private double estimateHandStrength(PokerAI ai) {
+        return HandEvaluator.evaluateHandStrength(ai.getHoleCards(), communityCards, ai.getPosition());
     }
 
-    private boolean handleAction(PokerAI player, String action, List<PokerAI> activePlayers) {
-        switch (action) {
-            case "Fold":
-                System.out.println(player.getId() + " folds.");
-                activePlayers.remove(player);
-                return false;
-            case "Call":
-                double callAmount = smallBlind; // Example placeholder
-                player.adjustBalance(-callAmount);
-                pot += callAmount;
-                System.out.println(player.getId() + " calls with " + callAmount);
-                return false;
-            case "Raise":
-                double raiseAmount = bigBlind * 2; // Example placeholder
-                player.adjustBalance(-raiseAmount);
-                pot += raiseAmount;
-                System.out.println(player.getId() + " raises to " + raiseAmount);
-                return true;
-            default:
-                System.out.println(player.getId() + " checks.");
-                return false;
-        }
-    }
 
-    private double estimateHandStrength(PokerAI player) {
-        return HandEvaluator.evaluateHandStrength(player.getHoleCards(), communityCards, player.getPosition());
-    }
 
     private String buildPlayerInput() {
         StringBuilder sb = new StringBuilder();
@@ -210,53 +182,38 @@ public class PokerGame {
         }
 
         // Append player hole cards
-        for (PokerAI player : players) {
+        for (Player player : players) {
             sb.append("/").append(player.getId()).append("=");
-            for (Card card : player.getHoleCards()) {
-                sb.append(formatCard(card)).append(",");
-            }
-            if (!player.getHoleCards().isEmpty()) {
-                sb.deleteCharAt(sb.length() - 1); // Remove the trailing comma
+            if (player instanceof PokerAI ai) {
+                for (Card card : ai.getHoleCards()) {
+                    sb.append(formatCard(card)).append(",");
+                }
+                if (!ai.getHoleCards().isEmpty()) {
+                    sb.deleteCharAt(sb.length() - 1); // Remove the trailing comma
+                }
             }
         }
 
         return sb.toString();
     }
 
-    // Helper method to format cards
     private String formatCard(Card card) {
         return card.getRank() + card.getSuit(); // Combine rank and suit without spaces
     }
 
-
     private void distributeWinnings(Map<String, Object> result) {
         List<String> winners = (List<String>) result.get("winners");
         double splitPot = pot / winners.size();
-        for (PokerAI player : players) {
+        for (Player player : players) {
             if (winners.contains(player.getId())) {
                 player.adjustBalance(splitPot);
-                System.out.println(player.getId() + " wins " + splitPot);
+                System.out.println(player.getId() + " wins $" + splitPot);
             }
         }
     }
 
-    // Getters
-    public List<PokerAI> getPlayers() {
-        return players;
-    }
 
-    public PokerAI getMainAI() {
-        return mainAI;
-    }
-
-    public double getSmallBlind() {
-        return smallBlind;
-    }
-
-    public double getBigBlind() {
-        return bigBlind;
-    }
-
+    // Getters for required methods
     public double getPot() {
         return pot;
     }
@@ -270,6 +227,43 @@ public class PokerGame {
     }
 
     public List<Card> getCommunityCards() {
-        return communityCards;
+        return new ArrayList<>(communityCards);
     }
+
+    public List<Player> getPlayers() {
+        return new ArrayList<>(players);
+    }
+
+    public int getSmallBlind() {
+        return (int)smallBlind;
+    }
+
+    public double getBigBlind() {
+        return bigBlind;
+    }
+
+    public void addToPot(double amount) {
+        this.pot += amount;
+    }
+    private void handleAIAction(PokerAI ai, String action) {
+        switch (action) {
+            case "Fold" -> {
+                ai.fold();
+                System.out.println(ai.getId() + " folds.");
+            }
+            case "Call" -> {
+                int amountToCall = (int) smallBlind;
+                ai.call(amountToCall);
+                addToPot(amountToCall);
+                System.out.println(ai.getId() + " calls $" + amountToCall);
+            }
+            case "Raise" -> {
+                int raiseAmount = (int) (bigBlind * 2); // Example AI raise logic
+                ai.raise(raiseAmount);
+                addToPot(raiseAmount);
+                System.out.println(ai.getId() + " raises $" + raiseAmount);
+            }
+        }
+    }
+
 }
