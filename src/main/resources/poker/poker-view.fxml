@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.TextField?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="poker.controllers.PokerController">
+    <!-- Top Section: Poker Table -->
+    <top>
+        <StackPane>
+            <!-- Poker Table Visual -->
+            <ImageView fx:id="pokerTableImage" fitWidth="800" fitHeight="400" />
+            <!-- Community Cards -->
+            <HBox fx:id="communityCards" spacing="10" alignment="CENTER" translateY="-120.0">
+                <Label text="Community Cards:"/>
+            </HBox>
+        </StackPane>
+    </top>
+
+    <!-- Center Section: AI Player Info -->
+    <center>
+        <VBox alignment="CENTER" spacing="20.0">
+            <!-- AI Players -->
+            <HBox fx:id="aiPlayersBox" spacing="20.0" alignment="CENTER">
+                <VBox alignment="CENTER">
+                    <Label text="AI Player 1"/>
+                    <HBox fx:id="aiPlayer1Cards" spacing="10.0"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="AI Player 2"/>
+                    <HBox fx:id="aiPlayer2Cards" spacing="10.0"/>
+                </VBox>
+            </HBox>
+            <!-- Pot Info -->
+            <Label fx:id="potLabel" text="Pot: $0" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+        </VBox>
+    </center>
+
+    <!-- Bottom Section: Player Cards and Controls -->
+    <bottom>
+        <VBox alignment="CENTER" spacing="20.0">
+            <!-- Player Cards -->
+            <HBox fx:id="playerCardsBox" spacing="10.0" alignment="CENTER">
+                <Label text="Your Cards:"/>
+            </HBox>
+            <!-- Player Controls -->
+            <HBox spacing="20.0" alignment="CENTER">
+                <Button fx:id="startButton" text="Deal" onAction="#startGame"/>
+                <Button fx:id="foldButton" text="Fold" onAction="#playerFold"/>
+                <Button fx:id="callButton" text="Call" onAction="#playerCall"/>
+                <Button fx:id="raiseButton" text="Raise" onAction="#playerRaise"/>
+                <Label text="Raise:"/>
+                <TextField fx:id="raiseAmountField" promptText="Enter raise amount"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
