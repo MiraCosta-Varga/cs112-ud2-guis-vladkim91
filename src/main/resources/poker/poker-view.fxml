@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="poker.controllers.PokerController">
+    <!-- Table -->
+    <StackPane fx:id="tableContainer" layoutX="50" layoutY="50" />
+
+    <!-- Community Cards -->
+    <HBox fx:id="communityCardsBox" spacing="10" alignment="center" layoutX="250" layoutY="250" />
+
+    <!-- Pot Label -->
+    <Label text="Pot: $0" fx:id="potLabel" layoutX="370" layoutY="270" style="-fx-font: bold 16px 'Arial';" />
+
+    <!-- Human Player -->
+    <VBox layoutX="370" layoutY="480" spacing="10" alignment="CENTER">
+        <Label text="Player (You)" fx:id="playerLabel" style="-fx-font: bold 16px 'Arial';" />
+        <HBox fx:id="playerCards" spacing="5" />
+    </VBox>
+
+    <!-- AI Players -->
+    <VBox layoutX="50" layoutY="200" spacing="10" alignment="CENTER">
+        <Label text="AI 1" fx:id="ai1Label" style="-fx-font: bold 14px 'Arial';" />
+        <HBox fx:id="ai1Cards" spacing="5" />
+    </VBox>
+
+    <VBox layoutX="150" layoutY="100" spacing="10" alignment="CENTER">
+        <Label text="AI 2" fx:id="ai2Label" style="-fx-font: bold 14px 'Arial';" />
+        <HBox fx:id="ai2Cards" spacing="5" />
+    </VBox>
+
+    <VBox layoutX="370" layoutY="50" spacing="10" alignment="CENTER">
+        <Label text="AI 3" fx:id="ai3Label" style="-fx-font: bold 14px 'Arial';" />
+        <HBox fx:id="ai3Cards" spacing="5" />
+    </VBox>
+
+    <VBox layoutX="550" layoutY="100" spacing="10" alignment="CENTER">
+        <Label text="AI 4" fx:id="ai4Label" style="-fx-font: bold 14px 'Arial';" />
+        <HBox fx:id="ai4Cards" spacing="5" />
+    </VBox>
+
+    <VBox layoutX="650" layoutY="200" spacing="10" alignment="CENTER">
+        <Label text="AI 5" fx:id="ai5Label" style="-fx-font: bold 14px 'Arial';" />
+        <HBox fx:id="ai5Cards" spacing="5" />
+    </VBox>
+
+
+
+
+
+
+
+    <HBox layoutX="500" layoutY="530" spacing="10" alignment="CENTER">
+        <Button text="Fold" fx:id="foldButton" onAction="#fold" />
+        <Button text="Call" fx:id="callButton" onAction="#call" />
+        <Button text="Raise" fx:id="raiseButton" onAction="#raise" />
+    </HBox>
+
+
+    <HBox layoutX="320" layoutY="580" spacing="10" alignment="CENTER">
+        <TextField fx:id="raiseAmountField" promptText="Enter raise amount" visible="false" />
+        <Button text="Bet" fx:id="betButton" onAction="#confirmRaise" visible="false" />
+    </HBox>
+
+    <!-- Deal Button -->
+    <Button text="Deal" fx:id="dealButton" layoutX="370" layoutY="500" onAction="#handleDealButton" />
+
+</AnchorPane>
