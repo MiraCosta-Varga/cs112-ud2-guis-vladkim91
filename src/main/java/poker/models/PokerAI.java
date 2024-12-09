@@ -1,23 +1,26 @@
 package poker.models;
 
-public abstract class PokerAI extends Player {
+import java.util.Random;
 
-    private final int aggression;
-    private final int tightness;
-    private final int bluffFrequency;
-    private final int riskTolerance;
+public class PokerAI extends Player {
+    private int aggression;
+    private int tightness;
+    private int bluffFrequency;
+    private int riskTolerance;
 
-    public PokerAI(String id, int chips, int aggression, int tightness, int bluffFrequency, int riskTolerance) {
-        super(id, chips);
+    private Random random;
+
+    public PokerAI(String name, int chips, int aggression, int tightness, int bluffFrequency, int riskTolerance) {
+        super(name, chips);
         this.aggression = aggression;
         this.tightness = tightness;
         this.bluffFrequency = bluffFrequency;
         this.riskTolerance = riskTolerance;
+        this.random = new Random();
     }
 
-    public abstract String makeDecision(double handStrength, double potOdds);
 
-    // Add getters if needed
+    // Getters for sliders (useful for debugging or future GUI integration)
     public int getAggression() {
         return aggression;
     }
@@ -32,5 +35,24 @@ public abstract class PokerAI extends Player {
 
     public int getRiskTolerance() {
         return riskTolerance;
+    }
+
+    public String decideAction(int currentBet, int pot) {
+        if (isFolded()) return "fold";
+
+        int callAmount = currentBet - getCurrentBet();
+        int decisionFactor = aggression + bluffFrequency - tightness;
+
+        if (decisionFactor > 70) {
+            return "raise";
+        } else if (callAmount <= getChips() / riskTolerance) {
+            return "call";
+        } else {
+            return "fold";
+        }
+    }
+
+    public int decideRaiseAmount(int currentBet, int pot) {
+        return currentBet + (pot / 4); // Example logic: raise by 25% of the pot
     }
 }

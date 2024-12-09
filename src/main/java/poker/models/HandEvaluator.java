@@ -1,40 +1,40 @@
 package poker.models;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HandEvaluator {
 
-    // Evaluates the hand strength based on hole cards, community cards, and position
-    public static double evaluateHandStrength(List<Card> holeCards, List<Card> communityCards, int position) {
-        if (holeCards.size() != 2) {
-            throw new IllegalArgumentException("Hole cards must contain exactly 2 cards.");
+    private static final HandRange handRange = new HandRange();
+
+    /**
+     * Compares two poker hands using the HandRange class.
+     * Returns:
+     * - A positive integer if hand1 is stronger
+     * - A negative integer if hand2 is stronger
+     * - Zero if the hands are of equal strength
+     */
+    public static int compareHands(List<Card> hand1, List<Card> hand2) {
+        // Validate the hands
+        if (hand1 == null || hand2 == null || hand1.size() != 2 || hand2.size() != 2) {
+            throw new IllegalArgumentException("Each hand must contain exactly 2 cards.");
         }
 
-        // Combine hole cards and community cards
-        List<Card> combinedCards = new ArrayList<>(holeCards);
-        combinedCards.addAll(communityCards);
+        // Get hand range values for both hands
+        double hand1Rank = HandRange.getHandRangeValue(hand1);
+        double hand2Rank = HandRange.getHandRangeValue(hand2);
 
-        // Use hand range chart (placeholder logic)
-        double handRangeValue = HandRange.getHandRangeValue(holeCards);
-
-        // Adjust hand strength based on position
-        double positionMultiplier = getPositionMultiplier(position);
-
-        // Calculate final hand strength
-        return handRangeValue * positionMultiplier;
+        // Compare the hand rankings
+        return Double.compare(hand1Rank, hand2Rank);
     }
 
-    // Determines position multiplier for hand strength (e.g., late position gets more weight)
-    private static double getPositionMultiplier(int position) {
-        if (position == 0) { // Dealer
-            return 1.2;
-        } else if (position == 1 || position == 2) { // Small Blind or Big Blind
-            return 0.8;
-        } else if (position >= 3) { // Late position
-            return 1.0;
-        } else { // Early or middle positions
-            return 0.9;
+    /**
+     * Evaluates a single hand's rank using the HandRange class.
+     * This method is useful for debugging or single-hand evaluation.
+     */
+    public static int evaluateHand(List<Card> hand) {
+        if (hand == null || hand.size() != 2) {
+            throw new IllegalArgumentException("Hand must contain exactly 2 cards.");
         }
+        return (int) HandRange.getHandRangeValue(hand);
     }
 }

@@ -6,5 +6,6 @@ module poker {
     exports poker;
     exports poker.api;
     exports poker.models;
+    exports poker.controllers;
     opens poker.controllers to javafx.fxml;
 }

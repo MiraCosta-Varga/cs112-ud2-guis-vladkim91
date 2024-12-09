@@ -1,43 +1,102 @@
 package poker.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Player {
+    private String name;
+    private int chips;
+    private List<Card> hand;
+    private boolean folded;
+    private int currentBet;
 
-    private String id;
-    private double chips;
-    private Card[] holeCards;
-
-    public Player(String id, double chips) {
-        this.id = id;
+    public Player(String name, int chips) {
+        this.name = name;
         this.chips = chips;
-        this.holeCards = new Card[2]; // Two hole cards
+        this.hand = new ArrayList<>();
+        this.folded = false;
+        this.currentBet = 0;
     }
 
-    public void setHoleCards(Card card1, Card card2) {
-        this.holeCards[0] = card1;
-        this.holeCards[1] = card2;
+    public String getName() {
+        return name;
     }
 
-    public Card[] getHoleCards() {
-        return holeCards;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public double getChips() {
+    public int getChips() {
         return chips;
     }
 
-    public void call(double amount) {
-        chips -= amount;
+    public void addChips(int amount) {
+        this.chips += amount;
     }
 
-    public void raise(double amount) {
-        chips -= amount;
+    public void deductChips(int amount) {
+        if (amount <= chips) {
+            this.chips -= amount;
+        } else {
+            throw new IllegalArgumentException("Not enough chips to place the bet.");
+        }
+    }
+
+    public List<Card> getHand() {
+        return hand;
+    }
+
+    public void addCardToHand(Card card) {
+        hand.add(card);
+    }
+
+    public void resetHand() {
+        hand.clear();
+        folded = false;
+        currentBet = 0;
+    }
+
+    public boolean isFolded() {
+        return folded;
     }
 
     public void fold() {
-        System.out.println(id + " folds.");
+        folded = true;
     }
+
+    public int getCurrentBet() {
+        return currentBet;
+    }
+
+    public void setCurrentBet(int amount) {
+        this.currentBet = amount;
+    }
+
+    public void resetForNewHand() {
+        hand.clear();
+        folded = false;
+        currentBet = 0;
+    }
+
+
+    public void placeBet(int amount) {
+        if (amount > chips) {
+            throw new IllegalArgumentException("Not enough chips to place the bet.");
+        }
+        deductChips(amount);
+        this.currentBet += amount;
+    }
+
+    public void addToPot(int amount) {
+        this.currentBet += amount;
+    }
+    // Getter for the player's hand
+    public List<Card> getCards() {
+        return hand;
+    }
+
+    public void clearCards() {
+        this.hand.clear(); // Assuming `hand` is a list of `Card`
+    }
+
+    public void setBalance(int balance) {
+        this.chips = balance;
+    }
+
 }
