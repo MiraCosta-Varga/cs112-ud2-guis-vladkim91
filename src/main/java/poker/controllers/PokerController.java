@@ -8,15 +8,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import poker.models.Card;
-import poker.models.Player;
-import poker.models.PokerAI;
-import poker.models.PokerGame;
+import poker.models.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class PokerController {
+public class PokerController implements PokerGameListener{
 
     @FXML
     private Label potLabel, playerLabel, ai1Label, ai2Label, ai3Label, ai4Label, ai5Label;
@@ -52,14 +50,77 @@ public class PokerController {
         potLabel.setText("Pot: $0");
 
         // Disable all action buttons initially
-        foldButton.setDisable(true);
-        callButton.setDisable(true);
-        raiseButton.setDisable(true);
-        raiseAmountField.setVisible(false);
-        betButton.setVisible(false);
+        disableHumanControls(); // Disable buttons at the start
+        setupButtonActions(); // Link button actions to game logic
 
         System.out.println("Initialization complete. Fold, Call, and Raise buttons disabled.");
     }
+
+
+    @Override
+    public void onHumanTurn() {
+        System.out.println("Enabling controls for human player.");
+        enableHumanControls(); // Activate buttons for human input
+    }
+
+    public void enableHumanControls() {
+        foldButton.setDisable(false);
+        callButton.setDisable(false);
+        raiseButton.setDisable(false);
+    }
+
+    public void disableHumanControls() {
+        foldButton.setDisable(true);
+        callButton.setDisable(true);
+        raiseButton.setDisable(true);
+    }
+
+    private void setupButtonActions() {
+        foldButton.setOnAction(e -> {
+            pokerGame.handleFold(humanPlayer);
+            disableHumanControls(); // Disable buttons after the action
+            pokerGame.moveToNextPlayer(); // Resume game
+        });
+
+        callButton.setOnAction(e -> {
+            pokerGame.handleCall(humanPlayer);
+            disableHumanControls(); // Disable buttons after the action
+            pokerGame.moveToNextPlayer(); // Resume game
+        });
+
+        raiseButton.setOnAction(e -> {
+            try {
+                int raiseAmount = Integer.parseInt(raiseAmountField.getText());
+                pokerGame.handleRaise(humanPlayer, raiseAmount);
+                disableHumanControls(); // Disable buttons after the action
+                pokerGame.moveToNextPlayer(); // Resume game
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid raise amount entered.");
+            }
+        });
+    }
+
+
+
+
+    /**
+     * Simulates getting a raise amount from the user. You can replace this with a dialog.
+     * @return the raise amount (placeholder value for now).
+     */
+    private int getRaiseAmountFromUser() {
+        // TODO: Replace this with actual user input logic (e.g., dialog box).
+        return 50; // Placeholder value for testing
+    }
+
+    /**
+     * Called when it's the human player's turn to enable controls.
+     */
+    public void handleHumanTurn() {
+        System.out.println("Human player's turn. Enabling controls.");
+        enableHumanControls(); // Enable buttons for the human player's action
+    }
+
+
 
 
     private void updateButtonStates() {
@@ -122,6 +183,8 @@ public class PokerController {
             default: throw new IllegalArgumentException("Invalid AI index: " + index);
         }
     }
+
+
 
     private HBox getAICardBox(int index) {
         switch (index) {

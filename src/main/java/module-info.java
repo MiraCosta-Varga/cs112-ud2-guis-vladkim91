@@ -8,4 +8,5 @@ module poker {
     exports poker.models;
     exports poker.controllers;
     opens poker.controllers to javafx.fxml;
+    opens poker.models to javafx.fxml;
 }

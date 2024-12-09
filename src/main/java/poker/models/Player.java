@@ -22,6 +22,7 @@ public class Player {
         return name;
     }
 
+
     public int getChips() {
         return chips;
     }
